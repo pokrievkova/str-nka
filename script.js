@@ -3,9 +3,20 @@ document.documentElement.classList.add("js");
 const menuToggle = document.querySelector(".menu-toggle");
 const navLinks = document.querySelector("#nav-links");
 const yearElement = document.querySelector("#current-year");
+const bookingForm = document.querySelector("#booking-form");
+const bookingDate = document.querySelector("#booking-date");
+const formFeedback = document.querySelector("#form-feedback");
 
 if (yearElement) {
   yearElement.textContent = String(new Date().getFullYear());
+}
+
+if (bookingDate) {
+  const today = new Date();
+  const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60_000)
+    .toISOString()
+    .slice(0, 10);
+  bookingDate.min = localToday;
 }
 
 if (menuToggle && navLinks) {
@@ -36,20 +47,30 @@ if (menuToggle && navLinks) {
   });
 }
 
-const revealElements = document.querySelectorAll(".reveal");
-const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (bookingForm && formFeedback) {
+  bookingForm.addEventListener("submit", (event) => {
+    event.preventDefault();
 
-if (prefersReducedMotion || !("IntersectionObserver" in window)) {
-  revealElements.forEach((element) => element.classList.add("is-visible"));
-} else {
-  const revealObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("is-visible");
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12 });
+    if (!bookingForm.reportValidity()) {
+      return;
+    }
 
-  revealElements.forEach((element) => revealObserver.observe(element));
+    const formData = new FormData(bookingForm);
+    const service = formData.get("service");
+    const date = formData.get("date");
+    const time = formData.get("time");
+
+    if (typeof service !== "string" || typeof date !== "string" || typeof time !== "string") {
+      formFeedback.textContent = "Skontrolujte, prosím, vybranú službu, dátum a čas.";
+      return;
+    }
+
+    const formattedDate = new Intl.DateTimeFormat("sk-SK", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    }).format(new Date(`${date}T12:00:00`));
+
+    formFeedback.textContent = `Ukážková rezervácia: ${service}, ${formattedDate} o ${time}. Požiadavka nebola odoslaná a termín nie je potvrdený.`;
+  });
 }
