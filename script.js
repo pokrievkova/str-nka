@@ -59,9 +59,15 @@ if (bookingForm && formFeedback) {
     const service = formData.get("service");
     const date = formData.get("date");
     const time = formData.get("time");
+    const name = formData.get("name");
 
-    if (typeof service !== "string" || typeof date !== "string" || typeof time !== "string") {
-      formFeedback.textContent = "Skontrolujte, prosím, vybranú službu, dátum a čas.";
+    if (
+      typeof service !== "string" ||
+      typeof date !== "string" ||
+      typeof time !== "string" ||
+      typeof name !== "string"
+    ) {
+      formFeedback.textContent = "Skontrolujte, prosím, vyplnené povinné údaje.";
       return;
     }
 
@@ -71,6 +77,7 @@ if (bookingForm && formFeedback) {
       year: "numeric"
     }).format(new Date(`${date}T12:00:00`));
 
-    formFeedback.textContent = `Ukážková rezervácia: ${service}, ${formattedDate} o ${time}. Požiadavka nebola odoslaná a termín nie je potvrdený.`;
+    const firstName = name.trim().split(/\s+/)[0];
+    formFeedback.textContent = `Ďakujeme${firstName ? `, ${firstName}` : ""}! Ukážková rezervácia služby ${service} na ${formattedDate} o ${time} je pripravená. Nebola odoslaná do systému štúdia a termín nie je potvrdený.`;
   });
 }
